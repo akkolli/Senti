@@ -1,0 +1,1096 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color: #151719;
+  background: #f4f5f0;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.senti-home {
+  position: relative;
+  display: flex;
+  min-height: calc(100vh - 104px);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  overflow: hidden;
+  padding: 32px 0 44px;
+}
+
+.senti-home::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  content: "";
+  background-image:
+    linear-gradient(rgba(21, 23, 25, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(21, 23, 25, 0.045) 1px, transparent 1px),
+    linear-gradient(135deg, rgba(61, 140, 149, 0.12), transparent 38%, rgba(197, 155, 67, 0.14));
+  background-size: 72px 72px, 72px 72px, 100% 100%;
+  mask-image: linear-gradient(180deg, transparent, #000 18%, #000 72%, transparent);
+  pointer-events: none;
+}
+
+.senti-orbit {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  width: min(760px, 100%);
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  transition: transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.senti-brand-mark {
+  display: flex;
+  width: 56px;
+  height: 56px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(21, 23, 25, 0.08);
+  border-radius: 8px;
+  background: #151719;
+  color: white;
+  box-shadow: 0 16px 40px rgba(21, 23, 25, 0.16);
+  transition:
+    opacity 360ms ease,
+    transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.senti-home.is-launching .senti-orbit {
+  transform: translateY(-36px);
+}
+
+.senti-home.is-launching .senti-brand-mark {
+  opacity: 0.55;
+  transform: scale(0.84);
+}
+
+.senti-search-heading {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  text-align: center;
+}
+
+.senti-search-heading h1 {
+  color: #151719;
+  font-size: 2.75rem;
+  font-weight: 760;
+  line-height: 1;
+}
+
+.senti-search-form {
+  display: grid;
+  width: 100%;
+  gap: 16px;
+}
+
+.senti-search-bar {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) 48px;
+  align-items: center;
+  min-height: 72px;
+  gap: 12px;
+  border: 1px solid rgba(21, 23, 25, 0.1);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.94);
+  padding: 10px 10px 10px 24px;
+  box-shadow:
+    0 1px 2px rgba(21, 23, 25, 0.08),
+    0 22px 70px rgba(21, 23, 25, 0.13);
+  transition:
+    border-color 180ms ease,
+    box-shadow 220ms ease,
+    transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.senti-search-bar:focus-within {
+  border-color: rgba(61, 140, 149, 0.75);
+  box-shadow:
+    0 1px 2px rgba(21, 23, 25, 0.08),
+    0 24px 84px rgba(61, 140, 149, 0.18);
+}
+
+.senti-home.is-launching .senti-search-bar {
+  transform: scale(0.94);
+}
+
+.senti-search-icon {
+  color: #637381;
+}
+
+.senti-search-input {
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #151719;
+  font-size: 2rem;
+  font-weight: 650;
+  line-height: 1.1;
+}
+
+.senti-search-input::placeholder {
+  color: rgba(99, 115, 129, 0.42);
+}
+
+.senti-search-submit {
+  display: flex;
+  width: 48px;
+  height: 48px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 999px;
+  background: #151719;
+  color: white;
+  cursor: pointer;
+  transition:
+    background 160ms ease,
+    opacity 160ms ease,
+    transform 160ms ease;
+}
+
+.senti-search-submit:hover:not(:disabled) {
+  background: #3d8c95;
+  transform: translateX(1px);
+}
+
+.senti-search-submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.senti-option-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  transition:
+    opacity 260ms ease,
+    transform 360ms ease;
+}
+
+.senti-home.is-launching .senti-option-row {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+.senti-option-control {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(21, 23, 25, 0.1);
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.78));
+  padding: 0 14px;
+  color: #637381;
+  box-shadow:
+    0 1px 2px rgba(21, 23, 25, 0.05),
+    0 10px 28px rgba(21, 23, 25, 0.07);
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.senti-option-control:hover {
+  border-color: rgba(61, 140, 149, 0.4);
+  box-shadow:
+    0 1px 2px rgba(21, 23, 25, 0.06),
+    0 14px 34px rgba(61, 140, 149, 0.11);
+  transform: translateY(-1px);
+}
+
+.senti-option-control select {
+  appearance: none;
+  width: auto;
+  min-width: 112px;
+  border: 0;
+  outline: 0;
+  background:
+    linear-gradient(45deg, transparent 50%, #637381 50%) calc(100% - 9px) 55% / 5px 5px no-repeat,
+    linear-gradient(135deg, #637381 50%, transparent 50%) calc(100% - 4px) 55% / 5px 5px no-repeat;
+  color: #151719;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 560;
+  padding: 4px 20px 4px 0;
+}
+
+.senti-option-control:focus-within {
+  border-color: rgba(61, 140, 149, 0.72);
+  box-shadow:
+    0 0 0 3px rgba(61, 140, 149, 0.12),
+    0 14px 34px rgba(61, 140, 149, 0.13);
+}
+
+.senti-option-control select:disabled {
+  cursor: not-allowed;
+}
+
+.senti-results-page {
+  display: grid;
+  gap: 22px;
+}
+
+.senti-report-hero {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(21, 23, 25, 0.08);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(21, 23, 25, 0.96), rgba(43, 61, 64, 0.96) 55%, rgba(61, 140, 149, 0.9)),
+    #151719;
+  color: white;
+  padding: clamp(24px, 4vw, 48px);
+  box-shadow: 0 24px 80px rgba(21, 23, 25, 0.16);
+}
+
+.senti-report-hero::after {
+  position: absolute;
+  inset: auto -10% -35% 42%;
+  height: 360px;
+  content: "";
+  background: radial-gradient(circle, rgba(197, 155, 67, 0.22), transparent 64%);
+  pointer-events: none;
+}
+
+.senti-report-hero-top,
+.senti-report-stats,
+.senti-report-note,
+.senti-report-meter,
+.senti-report-visual {
+  position: relative;
+  z-index: 1;
+}
+
+.senti-report-hero-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.senti-report-eyebrow {
+  color: rgba(255, 255, 255, 0.64);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.senti-report-hero h1 {
+  margin: 8px 0 0;
+  font-size: clamp(2.4rem, 6vw, 5.2rem);
+  font-weight: 780;
+  line-height: 0.96;
+}
+
+.senti-report-hero p {
+  max-width: 860px;
+  margin: 18px 0 0;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: clamp(1rem, 2vw, 1.35rem);
+  line-height: 1.45;
+}
+
+.senti-report-status {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.senti-report-meter {
+  height: 8px;
+  margin-top: 28px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.senti-report-meter div {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #6fb0b7, #d8bd70, #ffffff);
+}
+
+.senti-report-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.senti-report-stats > div {
+  border-color: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.senti-report-stats .text-steel,
+.senti-report-stats .text-xs {
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.senti-report-note {
+  max-width: 860px;
+  margin-top: 16px;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.senti-report-visual {
+  width: min(420px, 100%);
+  margin-top: 28px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  aspect-ratio: 16 / 9;
+}
+
+.senti-report-visual img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.senti-report-visual-fallback {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: rgba(255, 255, 255, 0.72);
+  font-weight: 700;
+}
+
+.senti-insights {
+  display: grid;
+  gap: 14px;
+}
+
+.senti-insight-lead,
+.senti-insight-card,
+.senti-competitor-strip {
+  border: 1px solid rgba(21, 23, 25, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 1px 2px rgba(21, 23, 25, 0.05);
+}
+
+.senti-insight-lead {
+  padding: 20px;
+}
+
+.senti-insight-eyebrow {
+  color: #637381;
+  font-size: 0.76rem;
+  font-weight: 740;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.senti-insight-lead h2 {
+  margin-top: 6px;
+  font-size: clamp(1.55rem, 3vw, 2.35rem);
+  font-weight: 740;
+}
+
+.senti-insight-lead p {
+  margin-top: 8px;
+  color: #637381;
+  font-size: 1rem;
+}
+
+.senti-insight-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.senti-insight-card {
+  padding: 16px;
+}
+
+.senti-insight-card h3 {
+  font-size: 1rem;
+  font-weight: 720;
+}
+
+.senti-insight-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.senti-insight-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+  border-top: 1px solid rgba(21, 23, 25, 0.08);
+  padding-top: 8px;
+  color: #637381;
+  font-size: 0.92rem;
+}
+
+.senti-insight-item span {
+  min-width: 0;
+}
+
+.senti-insight-item strong {
+  color: #151719;
+}
+
+.senti-competitor-strip {
+  padding: 16px;
+}
+
+.senti-competitor-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.senti-competitor-grid article {
+  border: 1px solid rgba(21, 23, 25, 0.1);
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.senti-competitor-grid h3 {
+  font-weight: 720;
+}
+
+.senti-competitor-grid p,
+.senti-competitor-grid li {
+  margin-top: 8px;
+  color: #637381;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.senti-competitor-grid ul {
+  padding-left: 18px;
+}
+
+.senti-results-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 380px);
+  gap: 22px;
+  align-items: start;
+}
+
+.senti-results-main,
+.senti-results-side {
+  display: grid;
+  gap: 22px;
+}
+
+.senti-results-side {
+  position: sticky;
+  top: 92px;
+}
+
+.senti-diagnostics {
+  border: 1px solid rgba(21, 23, 25, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.72);
+  padding: 0;
+  box-shadow: 0 1px 2px rgba(21, 23, 25, 0.05);
+}
+
+.senti-diagnostics summary {
+  display: flex;
+  cursor: pointer;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 18px;
+  color: #637381;
+  font-size: 0.95rem;
+  list-style: none;
+}
+
+.senti-diagnostics summary::-webkit-details-marker {
+  display: none;
+}
+
+.senti-diagnostics summary span:first-child {
+  color: #151719;
+  font-weight: 700;
+}
+
+.senti-diagnostics-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+  gap: 16px;
+  padding: 0 18px 18px;
+}
+
+.senti-diagnostics-wide {
+  grid-column: 1 / -1;
+}
+
+.senti-results-side section:last-child {
+  background: rgba(255, 255, 255, 0.68);
+  backdrop-filter: blur(18px);
+}
+
+@media (max-width: 1100px) {
+  .senti-results-grid,
+  .senti-diagnostics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .senti-insight-grid,
+  .senti-competitor-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .senti-results-side {
+    position: static;
+  }
+
+  .senti-report-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .senti-report-hero-top {
+    flex-direction: column;
+  }
+
+  .senti-report-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .senti-insight-grid,
+  .senti-competitor-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.senti-error {
+  justify-self: center;
+  max-width: 560px;
+  border: 1px solid rgba(200, 95, 74, 0.28);
+  border-radius: 8px;
+  background: rgba(200, 95, 74, 0.1);
+  padding: 10px 14px;
+  color: #c85f4a;
+  font-size: 0.875rem;
+}
+
+.senti-launch-panel {
+  display: grid;
+  grid-template-columns: 1fr;
+  justify-items: center;
+  gap: 14px;
+  text-align: center;
+  animation: senti-fade-up 420ms ease both;
+}
+
+.senti-launch-line {
+  position: relative;
+  width: min(340px, 80%);
+  height: 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(21, 23, 25, 0.1);
+}
+
+.senti-launch-line::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background: linear-gradient(90deg, transparent, #3d8c95, #c59b43, transparent);
+  animation: senti-scan 1.35s ease-in-out infinite;
+}
+
+.senti-progress-shell {
+  display: grid;
+  min-height: calc(100vh - 116px);
+  align-content: center;
+  gap: 18px;
+  padding: 10px 0 34px;
+}
+
+.senti-progress-hero {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(21, 23, 25, 0.1);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, #151719 0%, #202529 46%, #315f64 100%);
+  box-shadow: 0 24px 80px rgba(21, 23, 25, 0.18);
+  color: white;
+}
+
+.senti-progress-glow {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(120deg, transparent 0%, rgba(255, 255, 255, 0.1) 34%, transparent 58%),
+    linear-gradient(90deg, rgba(197, 155, 67, 0.2), transparent 28%, rgba(61, 140, 149, 0.18));
+  background-size: 180% 100%, 100% 100%;
+  opacity: 0.86;
+  animation: senti-surface 3.6s ease-in-out infinite;
+}
+
+.senti-progress-shell.is-failed .senti-progress-hero {
+  background: linear-gradient(135deg, #151719 0%, #302221 48%, #7b3a2e 100%);
+}
+
+.senti-progress-shell.is-failed .senti-progress-track > div {
+  background: linear-gradient(90deg, #c85f4a, #c59b43);
+}
+
+.senti-progress-core {
+  position: relative;
+  display: grid;
+  gap: 16px;
+  min-height: 380px;
+  align-content: center;
+  padding: 42px;
+}
+
+.senti-progress-kicker {
+  display: flex;
+  width: min(360px, 100%);
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 7px 10px 7px 14px;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.875rem;
+}
+
+.senti-progress-core h1 {
+  max-width: 900px;
+  overflow-wrap: anywhere;
+  font-size: 4.25rem;
+  font-weight: 720;
+  line-height: 0.98;
+}
+
+.senti-progress-core p {
+  max-width: 720px;
+  color: rgba(255, 255, 255, 0.76);
+  font-size: 1.25rem;
+  line-height: 1.5;
+}
+
+.senti-progress-track {
+  width: min(680px, 100%);
+  height: 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.senti-progress-track > div {
+  position: relative;
+  height: 100%;
+  min-width: 24px;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #3d8c95, #c59b43, #f4f5f0);
+  transition: width 520ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.senti-progress-track > div::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  animation: senti-scan 1.6s ease-in-out infinite;
+}
+
+.senti-progress-detail {
+  max-width: 680px;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.senti-progress-actions {
+  display: flex;
+  max-width: 900px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.senti-progress-status {
+  display: inline-flex;
+  min-width: min(680px, 100%);
+  align-items: center;
+  gap: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.76);
+  padding: 9px 13px;
+  font-size: 0.925rem;
+  line-height: 1.35;
+}
+
+.senti-progress-status span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.senti-progress-actions button {
+  min-height: 38px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.88);
+  cursor: pointer;
+  padding: 0 14px;
+  font-size: 0.875rem;
+  font-weight: 650;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+
+.senti-progress-actions button:hover {
+  border-color: rgba(255, 255, 255, 0.32);
+  background: rgba(255, 255, 255, 0.16);
+  transform: translateY(-1px);
+}
+
+.senti-progress-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 18px;
+}
+
+.senti-progress-details {
+  min-width: 0;
+  border: 1px solid rgba(21, 23, 25, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 18px;
+  box-shadow: 0 1px 3px rgba(21, 23, 25, 0.08);
+  animation: senti-fade-up 260ms ease both;
+}
+
+.senti-details-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.senti-details-header > span {
+  color: #637381;
+  font-size: 0.8125rem;
+}
+
+.senti-progress-panel {
+  min-width: 0;
+  border: 1px solid rgba(21, 23, 25, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 18px;
+  box-shadow: 0 1px 3px rgba(21, 23, 25, 0.08);
+}
+
+.senti-panel-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #151719;
+  font-weight: 700;
+}
+
+.senti-event-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.senti-event {
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr);
+  gap: 12px;
+}
+
+.senti-event > span {
+  width: 10px;
+  height: 10px;
+  margin-top: 5px;
+  border-radius: 999px;
+  background: #3d8c95;
+  box-shadow: 0 0 0 4px rgba(61, 140, 149, 0.14);
+}
+
+.senti-event.is-pending > span {
+  background: #c59b43;
+  box-shadow: 0 0 0 4px rgba(197, 155, 67, 0.16);
+}
+
+.senti-event strong {
+  display: block;
+  overflow-wrap: anywhere;
+  color: #151719;
+  font-size: 0.95rem;
+  line-height: 1.35;
+}
+
+.senti-event p {
+  margin-top: 3px;
+  color: #637381;
+  font-size: 0.8125rem;
+}
+
+.senti-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.senti-stat-tile {
+  min-width: 0;
+  border: 1px solid rgba(21, 23, 25, 0.08);
+  border-radius: 8px;
+  background: #f8f8f4;
+  padding: 12px;
+}
+
+.senti-stat-tile span {
+  display: block;
+  color: #637381;
+  font-size: 0.75rem;
+}
+
+.senti-stat-tile strong {
+  display: block;
+  margin-top: 4px;
+  color: #151719;
+  font-size: 1.25rem;
+  line-height: 1.1;
+}
+
+.senti-connector-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.senti-connector-pill {
+  display: inline-flex;
+  max-width: 100%;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(21, 23, 25, 0.1);
+  border-radius: 999px;
+  background: white;
+  padding: 7px 10px;
+  color: #637381;
+  font-size: 0.75rem;
+}
+
+.senti-connector-pill span {
+  min-width: 0;
+  overflow: hidden;
+  color: #151719;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.senti-connector-pill strong {
+  color: #3d8c95;
+  font-weight: 700;
+}
+
+.senti-progress-footnote {
+  margin-top: 16px;
+  color: #637381;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+}
+
+.senti-results-reveal {
+  animation: senti-results-reveal 620ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes senti-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes senti-scan {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes senti-surface {
+  0%,
+  100% {
+    background-position: 0% 0%, 0% 0%;
+  }
+  50% {
+    background-position: 100% 0%, 0% 0%;
+  }
+}
+
+@keyframes senti-results-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 900px) {
+  .senti-progress-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .senti-progress-core {
+    min-height: 340px;
+    padding: 32px;
+  }
+
+  .senti-progress-core h1 {
+    font-size: 3rem;
+  }
+
+  .senti-stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .senti-home {
+    min-height: calc(100vh - 88px);
+    justify-content: flex-start;
+    padding-top: 68px;
+  }
+
+  .senti-orbit {
+    gap: 16px;
+  }
+
+  .senti-search-heading h1 {
+    font-size: 2.25rem;
+  }
+
+  .senti-search-bar {
+    grid-template-columns: auto minmax(0, 1fr) 44px;
+    min-height: 62px;
+    padding: 8px 8px 8px 18px;
+  }
+
+  .senti-search-input {
+    font-size: 1.45rem;
+  }
+
+  .senti-search-submit {
+    width: 44px;
+    height: 44px;
+  }
+
+  .senti-option-row {
+    align-items: stretch;
+  }
+
+  .senti-option-control {
+    width: 100%;
+    justify-content: flex-start;
+    border-radius: 8px;
+  }
+
+  .senti-option-control input,
+  .senti-option-control select {
+    width: 100%;
+    max-width: none;
+  }
+
+  .senti-progress-core {
+    min-height: 320px;
+    padding: 24px;
+  }
+
+  .senti-progress-core h1 {
+    font-size: 2.25rem;
+  }
+
+  .senti-progress-core p {
+    font-size: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
+  }
+}
