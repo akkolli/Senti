@@ -41,11 +41,18 @@ const googleIndexedSocialDomains = [
 ];
 
 const socialIntentPhrases = [
-  { phrase: 'reviews complaints praise alternatives worth it', intent: 'reviews, complaints, praise, and alternatives' },
+  { phrase: 'review user review owner review customer review reviews complaints praise alternatives worth it', intent: 'user/owner reviews, complaints, praise, and alternatives' },
+  { phrase: 'hands on review owner review long term review customer reviews', intent: 'first-hand and long-term reviews' },
   { phrase: 'problems frustrations disappointed regret', intent: 'complaints and frustrations' },
   { phrase: 'love recommend best switched from', intent: 'positive drivers and switching stories' },
   { phrase: 'expensive price value worth it', intent: 'pricing and value perception' },
   { phrase: 'support bugs reliability documentation', intent: 'support, bug, and reliability issues' },
+];
+
+const priorityReviewDomains = [
+  'reddit.com',
+  'youtube.com',
+  'tiktok.com',
 ];
 
 type DiscoverySource = {
@@ -317,9 +324,9 @@ async function collectDiscoverySources(topic: string, region: string, timeWindow
     `${topic} vs competitors switching reasons`,
   ];
   const googleQueries = [
-    `site:reddit.com "${topic}" alternatives competitors`,
-    `site:producthunt.com "${topic}" alternatives competitors`,
-    `site:g2.com "${topic}" competitors alternatives`,
+    `site:reddit.com "${topic}" review user review owner review alternatives competitors`,
+    `site:producthunt.com "${topic}" review user review alternatives competitors`,
+    `site:g2.com "${topic}" customer review reviews competitors alternatives`,
   ];
 
   for (const query of tavilyQueries) {
@@ -464,30 +471,34 @@ function buildQueryPlan(input: {
   };
 
   for (const subject of baseSubjects) {
-    add('broad_public_opinion', `${regionPrefix}${subject} public opinion reviews discussion ${windowPhrase}`, 'broad public opinion');
-    add('complaints', `${regionPrefix}${subject} complaints problems frustrations reddit forum ${windowPhrase}`, 'complaints and pain points');
-    add('praise_positive_reviews', `${regionPrefix}${subject} praise positive reviews love recommend ${windowPhrase}`, 'praise and positive drivers');
+    add('product_image', `${regionPrefix}${subject} official product image photo exterior launch ${windowPhrase}`, 'product image and launch visuals');
+    add('broad_public_opinion', `${regionPrefix}${subject} public opinion review user reviews discussion ${windowPhrase}`, 'broad public opinion');
+    for (const domain of priorityReviewDomains) {
+      add('google_social_index', `site:${domain} "${subject}" review user review owner review customer reviews complaints praise worth it ${windowPhrase}`, `Google-indexed user review evidence from ${domain}`);
+    }
+    add('complaints', `${regionPrefix}${subject} review complaints problems frustrations reddit forum ${windowPhrase}`, 'complaints and pain points');
+    add('praise_positive_reviews', `${regionPrefix}${subject} review praise positive reviews love recommend ${windowPhrase}`, 'praise and positive drivers');
     add('pricing_value', `${regionPrefix}${subject} price expensive worth it value pricing objections ${windowPhrase}`, 'pricing and value perception');
     add('alternatives', `${regionPrefix}${subject} alternatives competitors switch from switch to comparison ${windowPhrase}`, 'alternatives and switching reasons');
     add('adoption_blockers', `${regionPrefix}${subject} adoption blockers why not buy renew churn objections ${windowPhrase}`, 'adoption blockers and buyer objections');
     add('support_issues', `${regionPrefix}${subject} support issues documentation bugs reliability complaints ${windowPhrase}`, 'support and product gaps');
-    add('bluesky_direct', `${subject} reviews complaints praise alternatives worth it`, 'direct Bluesky public posts');
+    add('bluesky_direct', `${subject} review user review owner review reviews complaints praise alternatives worth it`, 'direct Bluesky public posts');
     for (const domain of googleIndexedSocialDomains) {
-      add('google_social_index', `site:${domain} "${subject}" reviews complaints praise alternatives worth it ${windowPhrase}`, `Google-indexed social evidence from ${domain}`);
+      add('google_social_index', `site:${domain} "${subject}" review user review owner review customer reviews complaints praise alternatives worth it ${windowPhrase}`, `Google-indexed social evidence from ${domain}`);
     }
   }
 
   for (const competitor of competitors.slice(0, 8)) {
-    add('competitor_comparisons', `${regionPrefix}${topic} vs ${competitor} reviews complaints switching reasons ${windowPhrase}`, 'competitor comparison');
-    add('competitor_comparisons', `${regionPrefix}${competitor} alternative to ${topic} why switch ${windowPhrase}`, 'competitor win/loss evidence');
-    add('bluesky_direct', `${topic} ${competitor} comparison switching complaints praise`, 'direct Bluesky competitor evidence');
+    add('competitor_comparisons', `${regionPrefix}${topic} vs ${competitor} review reviews complaints switching reasons ${windowPhrase}`, 'competitor comparison');
+    add('competitor_comparisons', `${regionPrefix}${competitor} alternative to ${topic} review why switch ${windowPhrase}`, 'competitor win/loss evidence');
+    add('bluesky_direct', `${topic} ${competitor} review comparison switching complaints praise`, 'direct Bluesky competitor evidence');
     for (const domain of googleIndexedSocialDomains.slice(0, 6)) {
-      add('google_social_index', `site:${domain} "${topic}" "${competitor}" comparison switching ${windowPhrase}`, `Google-indexed competitor evidence from ${domain}`);
+      add('google_social_index', `site:${domain} "${topic}" "${competitor}" review user review comparison switching ${windowPhrase}`, `Google-indexed competitor evidence from ${domain}`);
     }
   }
 
   if (regionEnabled) {
-    add('region_specific', `${topic} ${region} customers reviews complaints praise ${windowPhrase}`, 'region-specific public opinion');
+    add('region_specific', `${topic} ${region} customers review user reviews complaints praise ${windowPhrase}`, 'region-specific public opinion');
   }
 
   return specs;
@@ -522,6 +533,11 @@ function expandQueryPlan(input: {
   };
 
   const contexts = [
+    'review',
+    'customer review',
+    'user review',
+    'owner review',
+    'long term review',
     'reddit',
     'forum',
     'customer reviews',
@@ -538,8 +554,6 @@ function expandQueryPlan(input: {
     'pricing discussion',
     'switching stories',
     'buyer objections',
-    'owner review',
-    'long term review',
     'return reason',
     'renewal churn',
   ];
@@ -565,6 +579,7 @@ function expandQueryPlan(input: {
 
   for (const subject of subjects) {
     for (const context of contexts) {
+      add('product_image', `${regionPrefix}${subject} official product image photo exterior launch ${context} ${windowPhrase}`, 'product image and launch visuals');
       add('broad_public_opinion', `${regionPrefix}${subject} ${context} public opinion ${windowPhrase}`, 'broad public opinion');
       add('complaints', `${regionPrefix}${subject} ${context} complaints problems frustrations ${windowPhrase}`, 'complaints and pain points');
       add('praise_positive_reviews', `${regionPrefix}${subject} ${context} praise recommend love ${windowPhrase}`, 'praise and positive drivers');

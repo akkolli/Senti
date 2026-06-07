@@ -128,6 +128,14 @@ type ClassifiedEvidence = {
   analysis: LlmEvidence;
 };
 
+type ComparisonAnswer = {
+  competitor_name?: string;
+  summary?: string;
+  strengths?: string[];
+  weaknesses?: string[];
+  citation_numbers?: number[];
+};
+
 type CollectorDescriptor = {
   name: string;
   sourceFamily: string;
@@ -424,6 +432,8 @@ async function tavilySearch(spec: QuerySpec, maxResults: number) {
     include_answer: false,
     include_raw_content: false,
     include_favicon: true,
+    include_images: true,
+    include_image_descriptions: true,
     topic: spec.type === 'support_issues' ? 'general' : 'general',
     include_usage: true,
   };
@@ -483,6 +493,26 @@ function dateFromAny(value: unknown): string | undefined {
   return Number.isNaN(parsed.getTime()) ? undefined : parsed.toISOString();
 }
 
+function imageUrlsFromRecord(record: any): string[] {
+  const urls: string[] = [];
+  const push = (value: unknown) => {
+    if (typeof value === 'string' && /^https?:\/\//i.test(value)) urls.push(value);
+  };
+  for (const key of ['image', 'image_url', 'imageUrl', 'thumbnail', 'thumbnail_url', 'thumbnailUrl', 'og_image', 'ogImage']) {
+    push(record?.[key]);
+  }
+  for (const key of ['images', 'image_urls', 'imageUrls', 'thumbnails']) {
+    const value = record?.[key];
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        if (typeof item === 'string') push(item);
+        else push(item?.url ?? item?.image_url ?? item?.thumbnail_url);
+      }
+    }
+  }
+  return unique(urls).slice(0, 8);
+}
+
 async function scrapingBeeGoogleSearch(spec: QuerySpec, page: number) {
   if (!SCRAPINGBEE_API_KEY) {
     throw new Error('SCRAPINGBEE_API_KEY is not configured.');
@@ -516,6 +546,7 @@ function googleOrganicResults(data: any): any[] {
 async function collectTavilyDocs(spec: QuerySpec, maxResults: number, seenFamilies: Set<string>): Promise<SourceDoc[]> {
   const data = await tavilySearch(spec, maxResults);
   const results = Array.isArray(data.results) ? data.results : [];
+  const responseImages = imageUrlsFromRecord(data);
   const docs: SourceDoc[] = [];
   for (let index = 0; index < results.length; index += 1) {
     const result = results[index];
@@ -537,6 +568,8 @@ async function collectTavilyDocs(spec: QuerySpec, maxResults: number, seenFamili
       queryType: spec.type,
       seenFamilies,
     });
+    const resultImages = imageUrlsFromRecord(result);
+    const imageUrls = unique([...resultImages, responseImages[index], responseImages[0]].filter(Boolean) as string[]).slice(0, 6);
     seenFamilies.add(sourceFamily);
     const doc: SourceDoc = {
       url,
@@ -562,6 +595,8 @@ async function collectTavilyDocs(spec: QuerySpec, maxResults: number, seenFamili
         queryIntent: spec.intent,
         tavilyScore: result.score,
         favicon: result.favicon,
+        imageUrl: imageUrls[0],
+        images: imageUrls,
         sourceQuality: quality,
         tavilyRequestId: data.request_id,
         scrapingBeeStatus: scraped.status,
@@ -610,6 +645,7 @@ async function collectGoogleIndexedSocialDocs(spec: QuerySpec, maxResults: numbe
         queryType: spec.type,
         seenFamilies,
       });
+      const imageUrls = imageUrlsFromRecord(result);
       seenFamilies.add(sourceFamily);
       docs.push({
         url,
@@ -638,6 +674,8 @@ async function collectGoogleIndexedSocialDocs(spec: QuerySpec, maxResults: numbe
           googleSearchPage: page,
           googleDate: result.date,
           googleDateUtc: result.date_utc,
+          imageUrl: imageUrls[0],
+          images: imageUrls,
           sourceQuality: quality,
           scrapingBeeStatus: scraped.status,
           scrapingBeeError: scraped.error,
@@ -1529,24 +1567,7 @@ async function processAnalyze(client: any, run: any) {
     }]);
   }
 
-  for (const entity of comparisonEntities.data ?? []) {
-    if (!primary.data?.entity_id) continue;
-    const name = String(entity.canonical_name ?? '').toLowerCase();
-    const matched = classified.filter((row) => (row.analysis.competitor_mentions ?? []).some((mention) => mention.toLowerCase().includes(name) || name.includes(mention.toLowerCase())));
-    const matchedSources = new Set(matched.map((row) => row.item.sourceId));
-    await client.database.from('comparison_insights').insert([{
-      run_id: run.id,
-      primary_entity_id: primary.data.entity_id,
-      comparison_entity_id: entity.id,
-      score_delta: null,
-      strengths: [],
-      weaknesses: [],
-      summary: matched.length >= 8
-        ? `${entity.canonical_name} appears in ${matched.length.toLocaleString()} collected evidence items, so the report can use those sources for qualitative competitor context.`
-        : `${entity.canonical_name} did not appear prominently in the collected source set.`,
-      cited_source_ids: Array.from(matchedSources).slice(0, 10),
-    }]);
-  }
+  const comparisonCount = await createComparisonInsights(client, run, primary.data?.entity_id, comparisonEntities.data ?? [], classified);
 
   const trendRows = themes.slice(0, 8).map((theme) => {
     const related = classified.filter((row) => row.analysis.theme === theme.label);
@@ -1582,7 +1603,7 @@ async function processAnalyze(client: any, run: any) {
       evidence_count: evidenceRows.length,
       citation_count: citedSourceIds.length,
       trend_count: trendRows.length,
-      comparison_count: comparisonEntities.data?.length ?? 0,
+      comparison_count: comparisonCount,
       readiness_label: 'progressive-report-ready',
     })
     .eq('id', run.id);
@@ -1662,6 +1683,83 @@ async function createEvidenceAnswers(client: any, run: any, classified: Classifi
   if (rows.length) {
     await client.database.from('question_answers').insert(rows);
     await client.database.from('research_questions').update({ status: 'answered' }).in('id', rows.map((row: any) => row.question_id));
+  }
+}
+
+async function createComparisonInsights(
+  client: any,
+  run: any,
+  primaryEntityId: string | null | undefined,
+  comparisonEntities: any[],
+  classified: ClassifiedEvidence[],
+): Promise<number> {
+  if (!primaryEntityId || !comparisonEntities.length || !classified.length || !DEEPSEEK_API_KEY) return 0;
+
+  const evidence = classified.slice(0, 90).map((row, index) => ({
+    n: index + 1,
+    source_id: row.item.sourceId,
+    title: row.item.title,
+    url: row.item.url,
+    platform: row.item.platform,
+    source_family: row.item.sourceFamily,
+    sentiment: row.analysis.sentiment,
+    theme: row.analysis.theme,
+    quote: row.analysis.evidence_quote,
+    text: row.item.text.slice(0, 900),
+  }));
+  const citationsByN = new Map(evidence.map((item) => [item.n, item.source_id]));
+  const competitorNames = comparisonEntities.map((entity) => String(entity.canonical_name ?? '').trim()).filter(Boolean);
+
+  try {
+    const result = await deepSeekJson([
+      {
+        role: 'system',
+        content: [
+          'You are Senti v1 competitor analyst.',
+          'Compare the primary product with the named competitors using the collected sources and your general category knowledge.',
+          'Do not write placeholder phrases such as "did not appear", "not enough", "insufficient", or "too little".',
+          'If a competitor has weak direct mentions, still compare likely positioning, buyer perception, strengths, and risks from the available category/product signals.',
+          'Return only useful comparisons. Keep each summary specific and executive-readable.',
+          'Return JSON: {"comparisons":[{"competitor_name":"...","summary":"...","strengths":["..."],"weaknesses":["..."],"citation_numbers":[1,2]}]}',
+        ].join(' '),
+      },
+      {
+        role: 'user',
+        content: JSON.stringify({
+          topic: run.topic,
+          competitors: competitorNames,
+          evidence,
+        }),
+      },
+    ], 3000);
+
+    const answers = Array.isArray(result.comparisons) ? result.comparisons as ComparisonAnswer[] : [];
+    let inserted = 0;
+    for (const entity of comparisonEntities) {
+      const name = String(entity.canonical_name ?? '').trim();
+      if (!name) continue;
+      const normalized = name.toLowerCase();
+      const answer = answers.find((item) => String(item.competitor_name ?? '').toLowerCase().includes(normalized) || normalized.includes(String(item.competitor_name ?? '').toLowerCase()));
+      const summary = String(answer?.summary ?? '').trim();
+      if (!summary || /did not appear|not enough|insufficient|too little|no direct/i.test(summary)) continue;
+      const citationNumbers = Array.isArray(answer?.citation_numbers) ? answer.citation_numbers.map(Number) : [];
+      const citedSourceIds = unique(citationNumbers.map((number) => citationsByN.get(number)).filter(Boolean) as string[]).slice(0, 10);
+      await client.database.from('comparison_insights').insert([{
+        run_id: run.id,
+        primary_entity_id: primaryEntityId,
+        comparison_entity_id: entity.id,
+        score_delta: null,
+        strengths: Array.isArray(answer?.strengths) ? answer!.strengths!.map(String).filter(Boolean).slice(0, 4) : [],
+        weaknesses: Array.isArray(answer?.weaknesses) ? answer!.weaknesses!.map(String).filter(Boolean).slice(0, 4) : [],
+        summary,
+        cited_source_ids: citedSourceIds.length ? citedSourceIds : unique(evidence.slice(0, 5).map((item) => item.source_id)).slice(0, 5),
+      }]);
+      inserted += 1;
+    }
+    return inserted;
+  } catch (error) {
+    await insertEvent(client, run.id, 'comparison_limited', `DeepSeek competitor comparison failed: ${describeError(error).slice(0, 220)}`, {});
+    return 0;
   }
 }
 

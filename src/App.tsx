@@ -21,6 +21,7 @@ import {
   ShieldAlert,
   Sparkles,
   TrendingUp,
+  Trash2,
   User,
 } from 'lucide-react'
 import {
@@ -46,7 +47,7 @@ import {
   YAxis,
 } from 'recharts'
 import { insforge } from './lib/insforge'
-import type { Answer, ConnectorRun, OpinionScore, RunSnapshot, RunStatus, Source } from './lib/types'
+import type { Answer, ConnectorRun, OpinionScore, ResearchRun, RunSnapshot, RunStatus, Source } from './lib/types'
 import { compactNumber, formatDate, fullNumber, statusColor } from './lib/format'
 
 type AuthState = {
@@ -158,7 +159,7 @@ function Shell({ user, children }: { user: any; children: ReactNode }) {
             </div>
           </Link>
           <nav className="flex items-center gap-2">
-            <Link className="flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-white" to="/">
+            <Link className="flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-white" to="/runs">
               <BarChart3 size={16} />
               Runs
             </Link>
@@ -198,6 +199,10 @@ function App() {
       <Route
         path="/"
         element={auth.user ? <Shell user={auth.user}><DashboardPage /></Shell> : <Navigate to="/login" replace />}
+      />
+      <Route
+        path="/runs"
+        element={auth.user ? <Shell user={auth.user}><RunsPage /></Shell> : <Navigate to="/login" replace />}
       />
       <Route
         path="/runs/:runId"
@@ -402,6 +407,90 @@ function DashboardPage() {
         </form>
       </section>
     </div>
+  )
+}
+
+function RunsPage() {
+  const navigate = useNavigate()
+  const [runs, setRuns] = useState<ResearchRun[]>([])
+  const [runsLoading, setRunsLoading] = useState(true)
+  const [deletingRunId, setDeletingRunId] = useState('')
+  const [error, setError] = useState('')
+
+  const loadRuns = useCallback(async () => {
+    setRunsLoading(true)
+    const { data, error: runsError } = await insforge.database
+      .from('research_runs')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(80)
+    if (runsError) {
+      setError(runsError.message ?? 'Unable to load runs')
+    } else {
+      setError('')
+      setRuns(((data ?? []) as ResearchRun[]).filter((run) => !run.archived_at))
+    }
+    setRunsLoading(false)
+  }, [])
+
+  useEffect(() => {
+    void loadRuns()
+  }, [loadRuns])
+
+  async function deleteRun(runId: string) {
+    setDeletingRunId(runId)
+    setError('')
+    const { error: deleteError } = await insforge.database.from('research_runs').delete().eq('id', runId)
+    if (deleteError) {
+      setError(deleteError.message ?? 'Unable to delete run')
+    } else {
+      setRuns((current) => current.filter((run) => run.id !== runId))
+    }
+    setDeletingRunId('')
+  }
+
+  return (
+    <section className="senti-runs-panel">
+      <div className="senti-runs-header">
+        <div>
+          <div className="senti-insight-eyebrow">Recent runs</div>
+          <h1>Runs</h1>
+        </div>
+        <button type="button" onClick={() => void loadRuns()} disabled={runsLoading}>
+          {runsLoading ? <Loader2 size={16} className="animate-spin" /> : <BarChart3 size={16} />}
+          Refresh
+        </button>
+      </div>
+      {error && <div className="senti-error mt-4">{error}</div>}
+      <div className="senti-runs-list">
+        {runs.map((run) => (
+          <article key={run.id} className="senti-run-row">
+            <button type="button" className="senti-run-main" onClick={() => navigate(`/runs/${run.id}`)}>
+              <span className="senti-run-topic">{run.topic}</span>
+              <span>{depthLabels[run.depth] ?? run.depth} · {timeWindowLabels[run.time_window] ?? run.time_window}</span>
+              <span>{formatDate(run.created_at)} · {compactNumber(run.candidates_collected)} collected</span>
+            </button>
+            <span className={`senti-run-status ${statusColor(run.status)}`}>{run.status}</span>
+            <div className="senti-run-actions">
+              <button type="button" onClick={() => navigate(`/runs/${run.id}`)}>
+                <ArrowRight size={16} />
+                Open
+              </button>
+              <button type="button" className="is-danger" disabled={deletingRunId === run.id} onClick={() => void deleteRun(run.id)}>
+                {deletingRunId === run.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                Delete
+              </button>
+            </div>
+          </article>
+        ))}
+        {!runsLoading && runs.length === 0 && (
+          <div className="senti-runs-empty">No runs yet.</div>
+        )}
+        {runsLoading && runs.length === 0 && (
+          <div className="senti-runs-empty">Loading runs...</div>
+        )}
+      </div>
+    </section>
   )
 }
 
@@ -1082,23 +1171,24 @@ function MatrixPlot({ data }: { data: Array<{ name: string; fetched: number; sta
 
 function freshnessBuckets(sources: Source[]) {
   const buckets = [
-    { name: '72h', value: 0 },
-    { name: '30d', value: 0 },
-    { name: '12m', value: 0 },
     { name: '5y+', value: 0 },
+    { name: '12m', value: 0 },
+    { name: '30d', value: 0 },
+    { name: '72h', value: 0 },
     { name: 'unknown', value: 0 },
   ]
   const now = Date.now()
   for (const source of sources) {
-    if (!source.published_at) {
+    const timestamp = source.published_at ? new Date(source.published_at).getTime() : Number.NaN
+    if (!Number.isFinite(timestamp) || timestamp > now + 86_400_000) {
       buckets[4].value += 1
       continue
     }
-    const ageDays = (now - new Date(source.published_at).getTime()) / 86400000
-    if (ageDays <= 3) buckets[0].value += 1
-    else if (ageDays <= 30) buckets[1].value += 1
-    else if (ageDays <= 365) buckets[2].value += 1
-    else buckets[3].value += 1
+    const ageDays = (now - timestamp) / 86_400_000
+    if (ageDays <= 3) buckets[3].value += 1
+    else if (ageDays <= 30) buckets[2].value += 1
+    else if (ageDays <= 365) buckets[1].value += 1
+    else buckets[0].value += 1
   }
   return buckets
 }

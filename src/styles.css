@@ -620,6 +620,137 @@ textarea {
   font-size: 0.875rem;
 }
 
+.senti-dashboard {
+  display: grid;
+  gap: 26px;
+}
+
+.senti-dashboard .senti-home {
+  min-height: min(620px, calc(100vh - 176px));
+  padding-bottom: 18px;
+}
+
+.senti-runs-panel {
+  border: 1px solid rgba(21, 23, 25, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 18px;
+  box-shadow: 0 1px 2px rgba(21, 23, 25, 0.05);
+}
+
+.senti-runs-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.senti-runs-header h2 {
+  margin-top: 4px;
+  font-size: 1.55rem;
+  font-weight: 760;
+}
+
+.senti-runs-header button,
+.senti-run-actions button {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid rgba(21, 23, 25, 0.1);
+  border-radius: 8px;
+  background: white;
+  padding: 0 12px;
+  color: #151719;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    transform 160ms ease;
+}
+
+.senti-runs-header button:hover:not(:disabled),
+.senti-run-actions button:hover:not(:disabled) {
+  border-color: rgba(61, 140, 149, 0.5);
+  background: rgba(61, 140, 149, 0.08);
+  transform: translateY(-1px);
+}
+
+.senti-runs-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.senti-run-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid rgba(21, 23, 25, 0.09);
+  border-radius: 8px;
+  background: rgba(244, 245, 240, 0.72);
+  padding: 10px;
+}
+
+.senti-run-main {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+  border: 0;
+  background: transparent;
+  padding: 2px 4px;
+  text-align: left;
+}
+
+.senti-run-main span {
+  min-width: 0;
+  overflow: hidden;
+  color: #637381;
+  font-size: 0.84rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.senti-run-main .senti-run-topic {
+  color: #151719;
+  font-size: 1rem;
+  font-weight: 720;
+}
+
+.senti-run-status {
+  border-radius: 999px;
+  padding: 7px 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.senti-run-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.senti-run-actions .is-danger {
+  color: #c85f4a;
+}
+
+.senti-run-actions .is-danger:hover:not(:disabled) {
+  border-color: rgba(200, 95, 74, 0.45);
+  background: rgba(200, 95, 74, 0.08);
+}
+
+.senti-runs-empty {
+  border: 1px dashed rgba(21, 23, 25, 0.16);
+  border-radius: 8px;
+  padding: 22px;
+  color: #637381;
+  text-align: center;
+}
+
 .senti-launch-panel {
   display: grid;
   grid-template-columns: 1fr;
